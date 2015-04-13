@@ -29,7 +29,7 @@ calc.all <- function(a, b) {
   plot(a, type='o', col='blue', xlim=range(b), ylim=range(b))
   lines(b, col='red', type='o')
   
-  alignment<-dtw(a, b, keep=T, distance.only = F, step=symmetric1)
+  alignment<-dtw(a, b, keep=T, distance.only = F, step=symmetric1, dist.method = "Euclidean")
   
   for (k in seq_along(alignment$index1)) {
     p1 <- a[alignment$index1[k], ]

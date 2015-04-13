@@ -1,6 +1,4 @@
-library(emdist)
-library(e1071)
-library(MASS)
+library(dtw)
 library(rjson)
 library(parallel)
 library(scales)
@@ -8,14 +6,7 @@ library(scales)
 data <- fromJSON(file = "data.json")
 # data <- fromJSON(file = "multi.json")
 
-# for (j in seq_along(data)) {
-#   if (data[[j]]$tag == "z") {
-#     data[[j]]$x <- rev(data[[j]]$x)
-#     data[[j]]$y <- rev(data[[j]]$y)
-#   }
-# }
-
-ges.as.matrix <- function(l, scale = TRUE, uniform.time = TRUE, mirror.y = TRUE) {
+ges.as.matrix <- function(l, scale = TRUE, uniform.time = TRUE, mirror.y = T) {
   if (mirror.y) {
     l$y <- -l$y
   }
@@ -24,7 +15,7 @@ ges.as.matrix <- function(l, scale = TRUE, uniform.time = TRUE, mirror.y = TRUE)
     l$x <- rescale(l$x)
     l$y <- rescale(l$y)
   }
-
+  
   if (uniform.time) {
     l$t <- seq(from = 0, to = 1, length.out = length(l$t))
   }
@@ -41,21 +32,19 @@ ncores <- 8
 cl <- makeCluster(ncores)
 dist <- matrix(NA_real_, length(ds), length(ds))
 
-dist.f <- function(x, y) {
-  sqrt(sum((x[1:2] - y[1:2])^2)) + abs(x[3] - y[3]) ^ 4
-}
-
 clusterExport(cl, c("ds"))
-clusterExport(cl, c("dist.f"))
-invisible(clusterEvalQ(cl, library(emdist)))
+invisible(clusterEvalQ(cl, library(dtw)))
 
 for (i in seq_along(ds)) {
   if (i %% 5 == 0) print(i)
   if (i == 1) next
   
-  dist[seq_len(i - 1), i] <- dist[i, seq_len(i - 1)] <- parSapply(cl, seq_len(i - 1),
-                                                                  function(j, i) emd(ds[[i]], ds[[j]], dist = dist.f),
-                                                                  i = i)
+  dist[seq_len(i - 1), i] <-
+    dist[i, seq_len(i - 1)] <- 
+    parSapply(cl,
+              seq_len(i - 1),
+              function(j, i) dtw(ds[[i]], ds[[j]], step.pattern = symmetric1, distance.only = T, dist.method = "Euclidean")$distance,
+              i = i)
 }
 stopCluster(cl)
 diag(dist) <- Inf
@@ -70,8 +59,7 @@ for (i in seq_along(data)) {
 
 pred <- ges[max.in.col]
 actual <- ges
-acc <- pred == actual
 
-print(mean(acc))
+print(mean(pred == actual))
 print(table(actual = actual, predicted = pred))
 print(error)
