@@ -5,15 +5,7 @@ library(rjson)
 library(parallel)
 library(scales)
 
-data <- fromJSON(file = "data.json")
-# data <- fromJSON(file = "multi.json")
-
-# for (j in seq_along(data)) {
-#   if (data[[j]]$tag == "z") {
-#     data[[j]]$x <- rev(data[[j]]$x)
-#     data[[j]]$y <- rev(data[[j]]$y)
-#   }
-# }
+data <- fromJSON(file = "data/10_5_S.json")
 
 ges.as.matrix <- function(l, scale = TRUE, uniform.time = TRUE, mirror.y = TRUE) {
   if (mirror.y) {
@@ -26,7 +18,7 @@ ges.as.matrix <- function(l, scale = TRUE, uniform.time = TRUE, mirror.y = TRUE)
   }
 
   if (uniform.time) {
-    l$t <- seq(from = 0, to = 1, length.out = length(l$t))
+    l$t <- rescale(rank(l$t, ties.method = "min"))
   }
   
   w <- rep(1, length(l$t))
@@ -42,7 +34,7 @@ cl <- makeCluster(ncores)
 dist <- matrix(NA_real_, length(ds), length(ds))
 
 dist.f <- function(x, y) {
-  sqrt(sum((x[1:2] - y[1:2])^2)) + abs(x[3] - y[3]) ^ 4
+  sqrt(sum((x[1:2] - y[1:2])^2)) + 100 * abs(x[3] - y[3]) ^ 3
 }
 
 clusterExport(cl, c("ds"))

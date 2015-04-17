@@ -2,7 +2,7 @@ library(dtw)
 library(rjson)
 library(scales)
 
-data <- fromJSON(file = "data.json")
+data <- fromJSON(file = "full_onetouch.json")
 ges.as.matrix <- function(l, scale = TRUE, uniform.time = TRUE, mirror.y = TRUE) {
   if (mirror.y) {
     l$y <- -l$y
@@ -42,8 +42,8 @@ calc.all <- function(a, b) {
 
 error <- 0
 
-for (i in seq_len(5)+15) {
-  for (j in seq_len(5)+15) {
+for (i in seq_len(10)+30) {
+  for (j in seq_len(10)+90) {
     if (i == j) next;
     dist <- calc.all(ds[[i]], ds[[j]])
     error <- error + dist
