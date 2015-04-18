@@ -5,7 +5,7 @@ library(rjson)
 library(parallel)
 library(scales)
 
-data <- fromJSON(file = "data/10_5_S.json")
+data <- fromJSON(file = "data/20_5_SM.json")
 
 ges.as.matrix <- function(l, scale = TRUE, uniform.time = TRUE, mirror.y = TRUE) {
   if (mirror.y) {
