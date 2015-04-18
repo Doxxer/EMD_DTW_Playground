@@ -1,30 +1,23 @@
+library(proxy)
 library(dtw)
 library(rjson)
 library(parallel)
 library(scales)
 
-data <- fromJSON(file = "data/10_10_s.json")
-
-ges.as.matrix <- function(l, scale = TRUE, uniform.time = TRUE, mirror.y = T) {
-  if (mirror.y) {
-    l$y <- -l$y
-  }
+data <- fromJSON(file = "data/20_10_SM.json")
+ges.as.matrix <- function(l, scale = TRUE, uniform.time = TRUE) {
+  l$y <- -l$y # mirror y
   
   if (scale) {
     l$x <- rescale(l$x)
     l$y <- rescale(l$y)
-  }
-  
+  }  
   if (uniform.time) {
-    l$t <- seq(from = 0, to = 1, length.out = length(l$t))
-  }
-  
-  w <- rep(1, length(l$t))
-  w <- w / sum(w)
-  
-  cbind(w, l$x, l$y, l$t)
+    l$t <- rescale(rank(l$t, ties.method = "min"))
+  }  
+  x <- l$x; y <- l$y; t <- l$t
+  cbind(x, y)
 }
-
 ds <- lapply(data, ges.as.matrix)
 
 ncores <- 8
@@ -42,10 +35,11 @@ for (i in seq_along(ds)) {
     dist[i, seq_len(i - 1)] <- 
     parSapply(cl,
               seq_len(i - 1),
-              function(j, i) dtw(ds[[i]], ds[[j]], step.pattern = symmetric1, distance.only = T, dist.method = "Euclidean")$distance,
+              function(j, i) dtw(ds[[i]], ds[[j]], distance.only = T, dist.method = "Euclidean")$normalizedDistance,
               i = i)
 }
 stopCluster(cl)
+
 diag(dist) <- Inf
 
 ges <- sapply(data, function(x) x$tag)
@@ -59,6 +53,5 @@ for (i in seq_along(data)) {
 pred <- ges[max.in.col]
 actual <- ges
 
-print(mean(pred == actual))
 print(table(actual = actual, predicted = pred))
-print(error)
+print(c(mean(pred == actual) * 100, error))
