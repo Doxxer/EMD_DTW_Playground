@@ -23,6 +23,4 @@ dist.f <- function(x, y) {
   sqrt(sum((x[1:2] - y[1:2])^2)) + 100 * abs(x[3] - y[3]) ^ 3
 }
 
-emd(ds[[1]], ds[[50]], dist=dist.f)
-
-ges <- sapply(data, function(x) x$tag)
+emd(ds[[48]], ds[[26]], dist=dist.f)

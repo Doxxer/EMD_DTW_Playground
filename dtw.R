@@ -3,7 +3,7 @@ library(emdist)
 library(rjson)
 library(scales)
 
-data <- fromJSON(file = "data/10_5_S.json")
+data <- fromJSON(file = "data/10_5_M.json")
 ges.as.matrix <- function(l, scale = TRUE, uniform.time = TRUE) {
   l$y <- -l$y # mirror y
   
@@ -15,17 +15,10 @@ ges.as.matrix <- function(l, scale = TRUE, uniform.time = TRUE) {
     l$t <- rescale(rank(l$t, ties.method = "min"))
   }  
   x <- l$x; y <- l$y; t <- l$t
-  w <- rep(1, length(l$t))
-  w <- w / sum(w)
   
   cbind(x, y, t)
 }
 ds <- lapply(data, ges.as.matrix)
-
-dist.f <- function(x, y) {
-  print(x)
-  sqrt(sum((x[1:2] - y[1:2])^2)) + 100 * abs(x[3] - y[3]) ^ 3
-}
 
 calc.all <- function(a, b) {
   plot(a, type='o', col='blue', xlim=range(b), ylim=range(b))
@@ -53,5 +46,6 @@ calc.all <- function(a, b) {
 # }
 # print(error)
 
-q <- ds[[1]]
-emd(ds[[1]], ds[[2]], dist = dist.f)
+d <- dtw(ds[[48]], ds[[26]], distance.only = TRUE)
+d$distance
+d$normalizedDistance
