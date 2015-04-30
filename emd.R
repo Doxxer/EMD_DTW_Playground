@@ -2,7 +2,7 @@ library(emdist)
 library(rjson)
 library(scales)
 
-data <- fromJSON(file = "data/10_5_M.json")
+data <- fromJSON(file = "data/11_10_SM.json")
 ges.as.matrix <- function(l, scale = TRUE, uniform.time = TRUE) {
   l$y <- -l$y
   if (scale) {
@@ -15,12 +15,27 @@ ges.as.matrix <- function(l, scale = TRUE, uniform.time = TRUE) {
   x <- l$x; y <- l$y; t <- l$t
   w <- rep(1.0 / length(l$t), length(l$t))
   
-  cbind(w, x, y, t)
+  sid <- l$id;
+  
+  cbind(w, x, y, t, sid)
 }
 ds <- lapply(data, ges.as.matrix)
 
 dist.f <- function(x, y) {
-  sqrt(sum((x[1:2] - y[1:2])^2)) + 100 * abs(x[3] - y[3]) ^ 3
+  if (x[4] != y[4]) {
+    return(-1000);
+  } else {
+    return(sqrt(sum((x[1:2] - y[1:2])^2)) + 100 * abs(x[3] - y[3]) ^ 3);
+  }  
 }
 
-emd(ds[[48]], ds[[26]], dist=dist.f)
+error = 0
+for (i in seq_len(10)+0) {
+  for (j in seq_len(10)+0) {
+    if (i == j) next;
+    dist <- emd(ds[[i]], ds[[j]], dist=dist.f)
+    error <- error + dist
+    print(c(i, j, dist))
+  }
+}
+print(error)

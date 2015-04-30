@@ -3,7 +3,7 @@ library(emdist)
 library(rjson)
 library(scales)
 
-data <- fromJSON(file = "data/10_5_M.json")
+data <- fromJSON(file = "data/11_10_SM.json")
 ges.as.matrix <- function(l, scale = TRUE, uniform.time = TRUE) {
   l$y <- -l$y # mirror y
   
@@ -16,7 +16,7 @@ ges.as.matrix <- function(l, scale = TRUE, uniform.time = TRUE) {
   }  
   x <- l$x; y <- l$y; t <- l$t
   
-  cbind(x, y, t)
+  cbind(x, y)
 }
 ds <- lapply(data, ges.as.matrix)
 
@@ -35,17 +35,17 @@ calc.all <- function(a, b) {
   alignment$distance
 }
 
-# error <- 0
-# for (i in seq_len(6)+0) {
-#   for (j in seq_len(6)+6) {
-#     if (i == j) next;
-#     dist <- calc.all(ds[[i]], ds[[j]])
-#     error <- error + dist
-#     print(c(i, j, dist))
-#   }
-# }
-# print(error)
+error <- 0
+for (i in seq_len(5)+90) {
+  for (j in seq_len(5)+90) {
+    if (i == j) next;
+    dist <- calc.all(ds[[i]], ds[[j]])
+    error <- error + dist
+    print(c(i, j, dist))
+  }
+}
+print(error)
 
-d <- dtw(ds[[48]], ds[[26]], distance.only = TRUE)
-d$distance
-d$normalizedDistance
+sapply(data, function(x) x$tag)
+
+# calc.all(ds[[1]], ds[[79]])
